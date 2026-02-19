@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology as Computational Substrate</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0d0d14;
+    --surface: #111118;
+    --border: rgba(255,255,255,0.06);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #7c6af7;
+    --accent2: #4fd1c5;
+    --accent3: #f6c90e;
+    --red: #f05;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+  }
+  .nav-logo {
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-tag {
+    font-size: 11px; padding: 4px 12px; border: 1px solid var(--border);
+    border-radius: 20px; color: var(--muted); letter-spacing: 0.1em;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 140px 48px 80px;
+    position: relative; overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(124,106,247,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(79,209,197,0.05) 0%, transparent 60%);
+  }
+
+  .grid-overlay {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* animated orb */
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); animation: pulse 8s ease-in-out infinite;
+  }
+  .orb1 { width: 500px; height: 500px; top: -100px; right: -100px; background: rgba(124,106,247,0.06); }
+  .orb2 { width: 350px; height: 350px; bottom: 0; left: 10%; background: rgba(79,209,197,0.04); animation-delay: 3s; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.1);opacity:1} }
+
+  .hero-inner { position: relative; z-index: 1; max-width: 900px; }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500; margin-bottom: 32px;
+  }
+  .hero-eyebrow::before {
+    content: ''; width: 24px; height: 1px; background: var(--accent);
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 6vw, 84px);
+    line-height: 1.05; font-weight: 400;
+    margin-bottom: 12px; letter-spacing: -0.02em;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: var(--muted); font-weight: 400; font-style: italic;
+    margin-bottom: 48px; line-height: 1.4;
+  }
+
+  .hero-thesis {
+    max-width: 680px;
+    font-size: 17px; color: rgba(232,232,240,0.75);
+    line-height: 1.8; margin-bottom: 56px;
+    border-left: 2px solid var(--accent);
+    padding-left: 24px;
+  }
+
+  .hero-meta {
+    display: flex; gap: 40px; align-items: center;
+  }
+  .meta-item { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+  .meta-item strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
+
+  .scroll-hint {
+    position: absolute; bottom: 40px; left: 48px;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 40px; height: 1px; background: var(--muted);
+    animation: scrollAnim 2s ease-in-out infinite;
+  }
+  @keyframes scrollAnim { 0%,100%{transform:scaleX(1)} 50%{transform:scaleX(1.5)} }
+
+  /* SECTIONS */
+  section { padding: 120px 48px; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; max-width: 40px; height: 1px; background: var(--accent);
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 400; line-height: 1.15;
+    margin-bottom: 32px; letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--accent); }
+
+  p { color: rgba(232,232,240,0.72); margin-bottom: 20px; font-size: 16px; line-height: 1.85; }
+  p:last-child { margin-bottom: 0; }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+  }
+
+  /* TWO-COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .two-col-text { grid-column: 1; }
+  .two-col-aside { grid-column: 2; }
+
+  /* QUOTE BLOCK */
+  .pull-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-style: italic; line-height: 1.45;
+    color: var(--text); opacity: 0.9;
+    border-left: 2px solid var(--accent2);
+    padding: 24px 0 24px 32px;
+    margin: 48px 0;
+  }
+
+  /* STACK CARDS */
+  .stack-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px; margin-top: 48px;
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .stack-card {
+    background: var(--surface); padding: 36px;
+    transition: background 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .stack-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .stack-card:hover { background: #141420; }
+  .stack-card:hover::before { opacity: 1; }
+
+  .card-co {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); font-weight: 500; margin-bottom: 10px;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; margin-bottom: 20px; font-weight: 400;
+  }
+  .status-row {
+    display: flex; flex-direction: column; gap: 10px;
+    border-top: 1px solid var(--border); padding-top: 20px; margin-top: 4px;
+  }
+  .status-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; line-height: 1.5;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+  }
+  .dot-green { background: #4ade80; }
+  .dot-amber { background: #fbbf24; }
+  .dot-blue  { background: #60a5fa; }
+  .status-text { color: rgba(232,232,240,0.65); }
+  .status-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* BOTTLENECK LIST */
+  .bottleneck-list { display: flex; flex-direction: column; gap: 2px; margin-top: 48px; }
+  .bn-item {
+    display: grid; grid-template-columns: 40px 1fr auto;
+    align-items: start; gap: 24px;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .bn-item:hover { background: #141420; border-color: rgba(124,106,247,0.2); }
+  .bn-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; color: rgba(124,106,247,0.3);
+    font-weight: 700; line-height: 1;
+    padding-top: 4px;
+  }
+  .bn-body {}
+  .bn-title { font-size: 15px; font-weight: 500; margin-bottom: 6px; color: var(--text); }
+  .bn-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .bn-badge {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 20px; white-space: nowrap; font-weight: 500;
+    align-self: start; margin-top: 4px;
+  }
+  .badge-critical { background: rgba(255,0,85,0.12); color: #f05; border: 1px solid rgba(255,0,85,0.2); }
+  .badge-high { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+  .badge-med { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+
+  /* VALUE CAPTURE */
+  .vc-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    margin-top: 48px;
+  }
+  .vc-card {
+    background: var(--surface); padding: 36px;
+    border: 1px solid var(--border);
+    position: relative; transition: all 0.25s;
+  }
+  .vc-card:first-child { border-radius: 8px 0 0 8px; }
+  .vc-card:last-child  { border-radius: 0 8px 8px 0; }
+  .vc-card.active {
+    background: linear-gradient(135deg, #14142a 0%, #1a1430 100%);
+    border-color: rgba(124,106,247,0.3);
+  }
+  .vc-card.active::after {
+    content: 'Where value pools';
+    position: absolute; top: 16px; right: 16px;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); background: rgba(124,106,247,0.1);
+    padding: 3px 8px; border-radius: 10px;
+  }
+  .vc-layer { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .vc-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 16px; font-weight: 400; }
+  .vc-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+  /* 2030 SCENARIO */
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 48px; }
+  .scenario-card {
+    padding: 48px; background: var(--surface);
+    border: 1px solid var(--border); position: relative;
+  }
+  .scenario-card.bull { border-radius: 8px 0 0 8px; }
+  .scenario-card.bear { border-radius: 0 8px 8px 0; background: #0d0d10; }
+  .scenario-tag {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 24px; display: block;
+  }
+  .tag-bull { color: #4ade80; }
+  .tag-bear { color: var(--muted); }
+  .scenario-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1; margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--text), var(--muted));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .scenario-label { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+  .scenario-items { display: flex; flex-direction: column; gap: 14px; }
+  .scenario-item { font-size: 14px; color: rgba(232,232,240,0.65); line-height: 1.5; padding-left: 16px; border-left: 1px solid var(--border); }
+
+  /* METRICS BAR */
+  .metrics { display: flex; gap: 2px; margin-top: 64px; }
+  .metric {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    padding: 32px 28px; text-align: center;
+    transition: background 0.2s;
+  }
+  .metric:first-child { border-radius: 8px 0 0 8px; }
+  .metric:last-child  { border-radius: 0 8px 8px 0; }
+  .metric:hover { background: #141420; }
+  .metric-val {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 400; display: block; margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .metric-lbl { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+
+  /* WORKLOADS */
+  .workload-row { display: flex; flex-direction: column; gap: 2px; margin-top: 48px; }
+  .workload-item {
+    display: grid; grid-template-columns: 200px 1fr 160px;
+    align-items: center; gap: 32px;
+    padding: 28px 32px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .workload-item:hover { background: #141420; border-color: rgba(124,106,247,0.15); }
+  .wl-type { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .wl-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; color: var(--text); }
+  .wl-metric { font-size: 12px; color: rgba(232,232,240,0.5); }
+  .wl-win { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .wl-clock { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent2); text-align: right; }
+
+  /* DEPLOY NOW */
+  .deploy-section {
+    background: linear-gradient(135deg, #0d0d1a 0%, #0f0f1f 100%);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .deploy-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 400px; gap: 80px; align-items: center;
+  }
+  .deploy-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    line-height: 1.15; font-weight: 400; margin-bottom: 24px;
+  }
+  .deploy-title em { font-style: italic; color: var(--accent); }
+  .milestones { display: flex; flex-direction: column; gap: 16px; }
+  .milestone {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 24px; border: 1px solid var(--border);
+    border-radius: 8px; background: rgba(255,255,255,0.02);
+  }
+  .ms-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .ms-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .ms-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* FOOTER */
+  footer {
+    padding: 60px 48px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-left { font-size: 12px; color: var(--muted); }
+  .footer-left strong { color: var(--text); display: block; margin-bottom: 4px; }
+  .footer-right { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* FADE IN */
+  .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links, .nav-tag { display: none; }
+    .hero, section { padding-left: 24px; padding-right: 24px; }
+    .two-col, .stack-grid, .vc-row, .scenario-grid { grid-template-columns: 1fr; }
+    .scenario-card.bull, .scenario-card.bear { border-radius: 8px; }
+    .metrics { flex-direction: column; }
+    .metric:first-child, .metric:last-child { border-radius: 8px; }
+    .workload-item { grid-template-columns: 1fr; }
+    .wl-clock { text-align: left; }
+    .deploy-inner { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    .bn-item { grid-template-columns: 30px 1fr; }
+    .bn-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span>Bio</span>Compute</div>
+  <div class="nav-links">
+    <a href="#thesis">Thesis</a>
+    <a href="#stack">Stack</a>
+    <a href="#capture">Value</a>
+    <a href="#bottlenecks">Risks</a>
+    <a href="#2030">2030</a>
+    <a href="#deploy">Deploy</a>
+  </div>
+  <div class="nav-tag">February 2026</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="grid-overlay"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Investment Thesis · February 2026</div>
+    <h1>Biology is the<br><em>Next Substrate.</em></h1>
+    <div class="hero-sub">Paired with silicon for biology-native<br>prediction and closed-loop adaptation.</div>
+    <p class="hero-thesis">
+      Silicon delivered the digital age. Its limits are now thermodynamic and architectural. Biology has solved these constraints for four billion years — self-assembling, self-repairing, running at ~20W while outperforming any exascale system on continual learning and robust generalisation. The interface revolution underway is humanity acquiring the API to that substrate.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-item"><strong>Base Case</strong>Biology-native drug screening & NAMs</div>
+      <div class="meta-item"><strong>Upside</strong>Specialised adaptive coprocessors</div>
+      <div class="meta-item"><strong>Window</strong>Data moat forming now · 2026–2027</div>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE BIOELECTRIC OS -->
+<section id="thesis">
+  <div class="section-inner">
+    <div class="section-label">First Principles</div>
+    <div class="two-col">
+      <div class="two-col-text fade-in">
+        <h2>The Bioelectric<br><em>Operating System</em></h2>
+        <p>Levin's work reveals the hidden layer: bioelectricity is not housekeeping. Voltage gradients across cell membranes and gap junctions form a distributed goal-state language sitting above the genome. Change the pattern and you change collective intent — grow an eye here, regenerate a limb there, solve that task.</p>
+        <p>Spikes are fast local I/O. Gradients are the slower, analogue OS encoding large-scale purpose. Neuralink's clinical data validated this in real time: when single-neuron spikes became unreadable, switching to aggregate spike-band power <em>improved</em> cursor control. The collective murmur carried more reliable intention than any isolated voice.</p>
+        <p>If these gradient patterns can be measured and written reproducibly, they become a programmable control surface for morphogenesis, repair, and computation.</p>
+      </div>
+      <div class="two-col-aside fade-in">
+        <div class="pull-quote">
+          "Evolution did not invent a central clock or a separate software layer. It built intelligence into the physics of the substrate itself."
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:8px;">
+          <div style="padding:20px 24px;border:1px solid var(--border);border-radius:8px;background:var(--surface);">
+            <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Silicon Limit</div>
+            <div style="font-size:14px;color:var(--muted);line-height:1.6;">Von Neumann tax: constant data movement between memory and logic. Scaling costs grow super-linearly. Frontier training strains power grids.</div>
+          </div>
+          <div style="padding:20px 24px;border:1px solid rgba(79,209,197,0.2);border-radius:8px;background:rgba(79,209,197,0.03);">
+            <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent2);margin-bottom:8px;">Biology's Answer</div>
+            <div style="font-size:14px;color:var(--muted);line-height:1.6;">Memory and compute co-located in the same physical medium. Self-repair while operating. ~20W for continual learning under drift.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE STACK -->
+<section id="stack" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-label">The Stack Shipping Today</div>
+    <h2 class="fade-in">This Is Not<br><em>Theory.</em></h2>
+    <p class="fade-in" style="max-width:620px;">The first functional stack is live: living substrate → high-channel I/O → perfusion ops → closed-loop firmware → narrow workloads. Here is what is shipped, proven, and still open.</p>
+
+    <div class="stack-grid fade-in">
+
+      <div class="stack-card">
+        <div class="card-co">Cortical Labs · Melbourne</div>
+        <div class="card-title">CL1 Biological Computer</div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Shipped</div><div class="status-text">800k living neurons on silicon. Cloud & local. USB plug-and-play.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Proven</div><div class="status-text">Neurons viable 6+ months. Real-time closed-loop interaction. In-Q-Tel backed.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-amber"></div>
+            <div><div class="status-label">Unproven</div><div class="status-text">Task benchmarks with variance across units. Reproducible training curves at scale.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <div><div class="status-label">12–18 Month Test</div><div class="status-text">Transfer-function stability across &gt;50 units on a defined assay.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack-card">
+        <div class="card-co">FinalSpark · Switzerland</div>
+        <div class="card-title">Neuroplatform</div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Shipped</div><div class="status-text">Remote rental of brain organoids on MEAs. Python API. University customers paying.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Proven</div><div class="status-text">&gt;1,000 organoids scaled. &gt;100-day lifespan. Bootstrapped to revenue.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-amber"></div>
+            <div><div class="status-label">Unproven</div><div class="status-text">Standardised assay endpoints with economic advantage after full ops costs.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <div><div class="status-label">12–18 Month Test</div><div class="status-text">Cross-unit reproducibility on a commercial screening task.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack-card">
+        <div class="card-co">Neuralink · USA</div>
+        <div class="card-title">High-Density I/O Modem</div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Shipped</div><div class="status-text">21 participants enrolled. PRIME & VOICE trials. 1,600+ stimulation channels.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Proven</div><div class="status-text">Reliable I/O in patients. Automated high-volume surgery roadmap 2026.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-amber"></div>
+            <div><div class="status-label">Unproven</div><div class="status-text">High-resolution write access into gradients at tissue scale.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <div><div class="status-label">12–18 Month Test</div><div class="status-text">Consistent stimulation patterns driving reproducible state changes.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack-card" style="border-top:1px solid rgba(246,201,14,0.15);">
+        <div class="card-co" style="color:var(--accent3);">Rainstick · Cairns, AU &nbsp;·&nbsp; Adjacent Signal</div>
+        <div class="card-title">Variable Electric Field Treatment</div>
+        <div class="status-row">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Shipped</div><div class="status-text">VEF seed treatment integrated into pre-farm workflows. Multi-species.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <div><div class="status-label">Proven</div><div class="status-text">CSIRO-supported microbial trials. 2025 canola: ~15% emergence improvement across multi-plot assessments.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-amber"></div>
+            <div><div class="status-label">Unproven</div><div class="status-text">Yield persistence to harvest. Full sham-controlled, multi-season data.</div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <div><div class="status-label">12–18 Month Test</div><div class="status-text">Reproducible yield uplift under field noise with sham controls.</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- VALUE CAPTURE -->
+<section id="capture">
+  <div class="section-inner">
+    <div class="section-label">Theory of Value Capture</div>
+    <div class="two-col fade-in">
+      <div>
+        <h2>Where the<br><em>Money Pools</em></h2>
+        <p>History shows substrate alone rarely captures the lion's share. In PCs, Microsoft owned the OS while Intel built the chips. In mobile, Apple captured the integrated experience. In cloud, AWS owned the platform while server makers commoditised.</p>
+        <p>In bio-compute, value pools at the control/firmware layer and the proprietary stimulus→outcome map — the dataset of (state, stimulus, context) → (response trajectory, outcome). This map compounds via network effects, switching costs, and regulatory capture.</p>
+      </div>
+      <div>
+        <p>Cortical Labs and FinalSpark are substrate-heavy today. Their cloud rental models position them to own the map as users generate data. The winning architecture resembles NVIDIA crossed with AWS: hardware + CUDA plus rentable infrastructure + APIs.</p>
+        <p><strong style="color:var(--text);">The critical question:</strong> who owns the data generated on the platform? This is not abstract — it is the entire moat question in one contractual clause.</p>
+      </div>
+    </div>
+
+    <div class="vc-row fade-in">
+      <div class="vc-card">
+        <div class="vc-layer">Layer 1</div>
+        <div class="vc-title">Substrate</div>
+        <div class="vc-desc">Organoids, iPSC lines, perfusion systems. Will commoditise as standardisation matures. Feeders to the platform above.</div>
+      </div>
+      <div class="vc-card">
+        <div class="vc-layer">Layer 2</div>
+        <div class="vc-title">I/O & Hardware</div>
+        <div class="vc-desc">MEAs, Neuralink-style threads, stimulation channels. Rapid iteration. Chinese competition. Commodity within 5 years.</div>
+      </div>
+      <div class="vc-card active">
+        <div class="vc-layer">Layer 3</div>
+        <div class="vc-title">Control / Map</div>
+        <div class="vc-desc">Proprietary stimulus→outcome dataset at scale. Validated protocols. Regulatory-grade submissions. Network effects. Switching costs. This is the moat.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WORKLOADS -->
+<section style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-label">Killer Workloads</div>
+    <h2 class="fade-in">Where Biology<br><em>Actually Wins</em></h2>
+    <p class="fade-in" style="max-width:600px;">Biology is not general compute. It is the specialised layer for workloads where embodiment and native dynamics deliver unmatchable value. Name the workload. Name the win metric. Reject everything else.</p>
+
+    <div class="workload-row fade-in">
+      <div class="workload-item">
+        <div>
+          <div class="wl-type">Base Case</div>
+          <div class="wl-title">Biology-Native Prediction</div>
+          <div class="wl-metric">Drug screening · NAMs · Organoid assays</div>
+        </div>
+        <div class="wl-win">Predict human response, toxicity, and efficacy ranking under perturbations. The substrate <em>is</em> the human-relevant dynamics silicon can only simulate expensively. 90% of drugs passing preclinical testing fail in humans — bio-compute's edge is closing that gap.</div>
+        <div class="wl-clock">No clock<br>constraint</div>
+      </div>
+      <div class="workload-item">
+        <div>
+          <div class="wl-type">Secondary</div>
+          <div class="wl-title">Closed-Loop Adaptive Control</div>
+          <div class="wl-metric">Robotics · Edge AI · Non-stationary environments</div>
+        </div>
+        <div class="wl-win">Stabilisation and adaptation under drift and shifting physical conditions. Win metric: joules per useful adaptation, sample efficiency, recovery after simulated damage.</div>
+        <div class="wl-clock">ms–s tasks<br>only</div>
+      </div>
+      <div class="workload-item">
+        <div>
+          <div class="wl-type">Call Option</div>
+          <div class="wl-title">Dynamics Coprocessor</div>
+          <div class="wl-metric">Reservoir-style nonlinear tasks</div>
+        </div>
+        <div class="wl-win">Energy per prediction under drift vs analog/memristor silicon equivalents. Biology provides the reservoir for free.</div>
+        <div class="wl-clock">2030+</div>
+      </div>
+    </div>
+
+    <div class="metrics fade-in">
+      <div class="metric"><span class="metric-val">~20W</span><div class="metric-lbl">Human brain power draw</div></div>
+      <div class="metric"><span class="metric-val">~40MW</span><div class="metric-lbl">GPT-4 class training run</div></div>
+      <div class="metric"><span class="metric-val">90%</span><div class="metric-lbl">Drugs failing after preclinical</div></div>
+      <div class="metric"><span class="metric-val">4mm</span><div class="metric-lbl">Necrosis wall without vascularisation</div></div>
+      <div class="metric"><span class="metric-val">2027</span><div class="metric-lbl">Transfer-function proof window</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BOTTLENECKS -->
+<section id="bottlenecks">
+  <div class="section-inner">
+    <div class="section-label">Investment Bottlenecks</div>
+    <h2 class="fade-in">Ranked by<br><em>Lethality</em></h2>
+    <p class="fade-in" style="max-width:640px;">No thesis survives contact with reality without ruthless mapping of failure modes. These are the structural bottlenecks, ranked in order of how likely each is to kill the investment case.</p>
+
+    <div class="bottleneck-list fade-in">
+
+      <div class="bn-item">
+        <div class="bn-num">1</div>
+        <div class="bn-body">
+          <div class="bn-title">Programming & Knowledge Transfer</div>
+          <div class="bn-desc">DishBrain showed learning is possible. Generalisation, reproducibility at scale, and persistence across replacements remain open. Fresh organoid may equal tabula rasa — this is potentially thesis-breaking. Acceptance test: time-to-task curve with variance across N units published by mid-2027.</div>
+        </div>
+        <div class="bn-badge badge-critical">Core Unsolved</div>
+      </div>
+
+      <div class="bn-item">
+        <div class="bn-num">2</div>
+        <div class="bn-body">
+          <div class="bn-title">Agency & Goal Conflict</div>
+          <div class="bn-desc">Cells optimise survival. Drift is native, not a bug. An organoid may optimise "stay alive" over your assigned task. Test: transfer-function stability (input X → output distribution Y) across 100+ units with reward-loop enforcement.</div>
+        </div>
+        <div class="bn-badge badge-critical">Existential</div>
+      </div>
+
+      <div class="bn-item">
+        <div class="bn-num">3</div>
+        <div class="bn-body">
+          <div class="bn-title">Ops & Holding Costs</div>
+          <div class="bn-desc">Tissue never sleeps. System-level energy (perfusion + MEA + compute overhead) must deliver clear advantage over silicon including idle-time. Target: 70%+ utilisation and low contamination/MTTR. Fully burdened $/wetware-hour is the number that matters.</div>
+        </div>
+        <div class="bn-badge badge-high">Economic</div>
+      </div>
+
+      <div class="bn-item">
+        <div class="bn-num">4</div>
+        <div class="bn-body">
+          <div class="bn-title">Neuromorphic Silicon Competition</div>
+          <div class="bn-desc">Intel Hala Point (1.15B neurons on Loihi 2) and IBM NorthPole deliver low-power continual learning deterministically — no necrosis, no ethics overhead, no idle cost. Biology's edge: true embodiment for human-relevant prediction. Head-to-head on defined metrics (joules/adaptation, robustness under drift) is required.</div>
+        </div>
+        <div class="bn-badge badge-high">Strategic</div>
+      </div>
+
+      <div class="bn-item">
+        <div class="bn-num">5</div>
+        <div class="bn-body">
+          <div class="bn-title">Timescale Mismatch & 3D Scaling</div>
+          <div class="bn-desc">Millisecond biology limits applications to real-world control and prediction. The necrosis wall (~4mm without vascularisation) caps organoid size. Perfusion and bioprinting roadmaps are the unlock — track Vivodyne-style vascular printing.</div>
+        </div>
+        <div class="bn-badge badge-high">Physical</div>
+      </div>
+
+      <div class="bn-item">
+        <div class="bn-num">6</div>
+        <div class="bn-body">
+          <div class="bn-title">Ethics, Regulation & Moratorium Risk</div>
+          <div class="bn-desc">Live tripwires: NHMRC National Statement 2025 (organoids, effective early 2026); EU 2024–25 in-vitro neurological model guidance; FDA 2025 NAMs acceleration. Levin's "cognition all the way down" is not philosophy — it is a direct challenge to the regulatory framework. Companies without early IRB engagement face existential compliance risk.</div>
+        </div>
+        <div class="bn-badge badge-med">Regulatory</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 2030 SCENARIOS -->
+<section id="2030" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-label">2030 Scenarios</div>
+    <h2 class="fade-in">What the World Looks Like<br><em>If This Works</em></h2>
+    <p class="fade-in" style="max-width:640px;">In the success scenario, the AI infrastructure crisis has become the dominant constraint on technological progress. Power demand from data centres doubled 2025–2028. Hyperscalers are paying spot electricity prices that would have been unthinkable in 2020. Bio-compute has found its wedge.</p>
+
+    <div class="scenario-grid fade-in">
+      <div class="scenario-card bull">
+        <span class="scenario-tag tag-bull">Bull Case · 2030</span>
+        <div class="scenario-num">$2B</div>
+        <div class="scenario-label">Cortical Labs valuation range · 8–12× ARR</div>
+        <div class="scenario-items">
+          <div class="scenario-item">$180–250M ARR. 60% large pharma, 25% CROs, 15% academic & government.</div>
+          <div class="scenario-item">68% gross margin. Protocol licensing layer sitting above hardware drives premium.</div>
+          <div class="scenario-item">4.2M validated assay endpoints across 340 compounds. No competitor has more than 800k.</div>
+          <div class="scenario-item">GxP certification achieved 2027 after FDA NAMs engagement. Inside procurement of 11 top-20 pharma companies.</div>
+          <div class="scenario-item">CL1 Gen 3: 14–18 month organoid lifespan. 8-minute AI-assisted calibration.</div>
+          <div class="scenario-item">FinalSpark: $400–700M. AWS of wetware for research. Acquired by Thermo Fisher or Merck KGaA.</div>
+        </div>
+      </div>
+      <div class="scenario-card bear">
+        <span class="scenario-tag tag-bear">Bear Case · 2030</span>
+        <div class="scenario-num" style="background:linear-gradient(135deg,var(--muted),#444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">TBD</div>
+        <div class="scenario-label">The programming problem remains unsolved</div>
+        <div class="scenario-items">
+          <div class="scenario-item">Transfer function variance never came below 35% across units. Pharma ran pilots, found results irreproducible, returned to established in vitro methods.</div>
+          <div class="scenario-item">FinalSpark pivoted to pure research tools. Cortical Labs raised a down round in 2028.</div>
+          <div class="scenario-item">Neuromorphic silicon (Hala Point, NorthPole) captured all edge AI workloads with deterministic results.</div>
+          <div class="scenario-item">Bio-compute became a footnote in the 2030s synthetic biology hype cycle analysis.</div>
+          <div class="scenario-item" style="border-left-color:var(--accent);color:rgba(232,232,240,0.8);">The tell is visible by mid-2027: cross-unit reproducibility data, published with variance, on a commercially relevant assay.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pull-quote fade-in" style="border-color:var(--accent3);margin-top:64px;">
+      "The data moat in bio-compute compounds fastest for first movers. The window to anchor the proprietary stimulus-outcome dataset before well-capitalised competitors enter is measured in months, not years."
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DEPLOY NOW -->
+<section class="deploy-section" id="deploy">
+  <div class="section-inner">
+    <div class="deploy-inner">
+      <div class="fade-in">
+        <div class="section-label">Call to Action</div>
+        <div class="deploy-title">Deploy at the<br><em>Control Layer.</em><br>Now.</div>
+        <p>The base-case bet is platform + assays. The upside is specialised coprocessors for adaptation. Biology does not replace silicon. It provides the specialised layer for workloads where embodiment and native dynamics deliver unmatchable value.</p>
+        <p style="margin-top:16px;">We re-underwrite annually against three metrics: transfer-function stability, bring-up/calibration time, and all-in system economics per validated outcome.</p>
+      </div>
+      <div class="milestones fade-in">
+        <div style="font-size:12px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">12–24 Month Proof Points</div>
+        <div class="milestone">
+          <div class="ms-icon">◎</div>
+          <div>
+            <div class="ms-title">Transfer-Function Stability</div>
+            <div class="ms-desc">Reproducible benchmarks across &gt;100 organoids. Published variance. CV &lt;20% on defined task.</div>
+          </div>
+        </div>
+        <div class="milestone">
+          <div class="ms-icon">◎</div>
+          <div>
+            <div class="ms-title">Bring-Up Time</div>
+            <div class="ms-desc">Calibration below 15 minutes. Uptime &gt;30 days continuous.</div>
+          </div>
+        </div>
+        <div class="milestone">
+          <div class="ms-icon">◎</div>
+          <div>
+            <div class="ms-title">Unit Economics</div>
+            <div class="ms-desc">All-in system economics per validated outcome. 60%+ gross margin at 70%+ utilisation.</div>
+          </div>
+        </div>
+        <div class="milestone">
+          <div class="ms-icon">◎</div>
+          <div>
+            <div class="ms-title">Defined Workload Win</div>
+            <div class="ms-desc">One honest silicon baseline where wetware wins on a published, reproducible metric.</div>
+          </div>
+        </div>
+        <div class="milestone" style="border-color:rgba(255,0,85,0.2);background:rgba(255,0,85,0.04);">
+          <div class="ms-icon" style="color:var(--red);">✕</div>
+          <div>
+            <div class="ms-title" style="color:var(--red);">Kill Criteria</div>
+            <div class="ms-desc">No cross-unit reproducibility by mid-2027. Holding cost &gt;10× projected revenue per unit.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <strong>Biology as Computational Substrate</strong>
+    A First-Principles Investment Thesis · February 2026
+  </div>
+  <div class="footer-right">Falsifiable · Allocator-Ready · IC-Proof</div>
+</footer>
+
+<script>
+  // Fade in on scroll
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  // Subtle parallax on hero orbs
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const o1 = document.querySelector('.orb1');
+    const o2 = document.querySelector('.orb2');
+    if (o1) o1.style.transform = `translateY(${y * 0.15}px)`;
+    if (o2) o2.style.transform = `translateY(${-y * 0.08}px)`;
+  });
+</script>
+
+</body>
+</html>
